@@ -1,46 +1,56 @@
+# LC-3 processor
 
-# LC-3 Processor Implementation in Verilog
+An LC-3 processor written from scratch in SystemVerilog, for the Computer Architecture
+course at the University of Verona. Everything is here: the datapath, the control unit as
+a finite state machine, the ALU, the register file and the RAM.
 
-## Overview
+The control unit decodes the full 16-entry LC-3 opcode table. Fourteen instructions are
+implemented — `BR`, `ADD`, `LD`, `ST`, `JSR`, `AND`, `LDR`, `STR`, `NOT`, `LDI`, `STI`,
+`RET`/`JMP`, `LEA`, `TRAP`. `RTI` and the reserved opcode are declared but left as stubs
+that print a message, since neither is needed without interrupt support.
 
-This project is a Verilog/SystemVerilog implementation of the LC-3 (Little Computer 3) processor. It was developed as part of an academic project at the University of Verona. The project demonstrates how a basic processor, based on the LC-3 architecture, can be built from scratch using digital design concepts.
+The ALU does three operations (add, bitwise and, two's complement negate); `NOT` and
+subtraction are built on top of those. Condition codes are set by a separate N/Z/P block,
+and sign extension has its own modules for the 5, 6, 9 and 11 bit immediate fields.
 
-## Features
+## Layout
 
-- **Finite State Machine (FSM)**: Manages control signals and the fetch-decode-execute cycle.
-- **Arithmetic Logic Unit (ALU)**: Performs arithmetic and logical operations.
-- **Registers and Memory**: Implements general-purpose registers and RAM for storage.
-- **Sign Extension and Multiplexers**: Extends and manages data flow between components.
-- **Testbench**: Includes a testbench for simulating the processor and verifying functionality.
+```
+LC-3/
+├── LC-3 non-hierarchical/     the version that runs
+│   ├── Componenti/            design.sv, testbench.sv, and one file per module
+│   ├── Output/                dump.vcd from the last simulation
+│   └── makefile
+└── LC-3 hierarchical (WIP)/   same processor, split into a module hierarchy — unfinished
+```
 
-## Files
+`Report.pdf` in the root has the full write-up, in Italian, with the datapath drawings.
 
-- `FSM.sv`: Controls the main operation of the processor.
-- `ALU.sv`: Performs arithmetic and logic operations.
-- `design.sv`: Main design file, integrates all components.
-- `RegFile.sv`: Implements the general-purpose registers.
-- `Ram.sv`: Provides memory storage.
-- Additional modules for multiplexers, sign extension, and I/O.
+## Simulating
 
-## Instructions
+You need [Icarus Verilog](https://steveicarus.github.io/iverilog/). From
+`LC-3/LC-3 non-hierarchical`:
 
-To run the LC-3 processor:
+```bash
+make
+```
 
-1. **Load the Program**: Input the binary program into RAM starting at memory address `0x3000`.
-2. **Compile and Simulate**: Use `iverilog` to compile the Verilog files and run the simulation.
-3. **View Results**: The simulation will display outputs in the terminal or through a waveform viewer like GTKWave.
+That compiles the design with `iverilog`, runs it under `vvp` and drops `dump.vcd` into
+`Output/`. The FSM prints its state at every step, so you can follow the fetch-decode-execute
+cycle straight in the terminal.
 
-A Makefile is provided to streamline the compilation and simulation process.
+To look at the waveforms:
 
-## Testing
+```bash
+gtkwave Output/dump.vcd
+```
 
-- **EPWAVE**: A GTKWave file is included to visualize the test results.
-- The project has been tested using a variety of test cases, ensuring the proper functionality of the LC-3 processor.
+## Running your own program
 
-## Credits
+The test program is written directly into the RAM's `initial` block in `Ram.sv`, as binary
+literals starting at address `0x3000` — which is where the LC-3 begins execution. Address
+`0x0025` holds the halt TRAP vector. Edit those cells to run something else.
 
-Developed by Antonio Iovine with contribution of the University of Verona.
+## Authors
 
-## License
-
-This project is licensed under the MIT License.
+Antonio Iovine, for the Computer Architecture course, University of Verona.
